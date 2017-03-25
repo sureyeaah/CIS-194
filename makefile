@@ -2,7 +2,7 @@ CFLAG = -threaded -rtsopts -with-rtsopts=-N
 CC = ghc
 
 test: $(OBJS)
-	$(CC) $(CFLAG) hw2.hs
+	$(CC) $(CFLAG) hw3.hs
 
 clean:
 	del *.exe

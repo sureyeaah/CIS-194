@@ -1,0 +1,11 @@
+[requests]
+desiredFood = cookies
+desiredQuantity = 20
+
+[supply]
+flour = 20 ounzes
+
+sugar = none!
+[conclusion]
+# none!
+

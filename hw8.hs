@@ -169,42 +169,35 @@ type Section = (Identifier, [Declaration])
 type INIFile = [Section]
 parseINI :: Parser INIFile
 parseINI = many $ parseSection
+    where 
+        parseSection = do
+            header <- parseHeader
+            declarations <- many $ parseDeclaration `orElse` parseEmpty `orElse` parseComment
+            return (header, catMaybes declarations)
 
+        parseIdentifier = many1 $ anyChar >>= \c -> if isAlphaNum c then return c else noParser
+
+        parseHeader = do
+            char '['
+            id <- parseIdentifier
+            char ']'
+            char '\n'
+            return id
+        
+        parseComment = char '#' >> (many $ anyCharBut '\n') >> parseEmpty
+
+        parseEmpty = char '\n' >> return Nothing
+
+        parseDeclaration = do
+            id <- parseIdentifier
+            many $ char ' '
+            char '='
+            many $ char ' '
+            value <- many1 $ anyCharBut '\n'
+            char '\n'
+            return $ Just (id, value)
 many1 :: Parser a -> Parser [a]
 many1 p = (:) <$> p <*> many p
-
-parseSection :: Parser Section
-parseSection = do
-    header <- parseHeader
-    declarations <- many $ parseDeclaration `orElse` parseEmpty `orElse` parseComment
-    return (header, catMaybes declarations)
-
-parseHeader :: Parser Identifier
-parseHeader = do
-    char '['
-    id <- parseIdentifier
-    char ']'
-    char '\n'
-    return id
-
-parseIdentifier :: Parser Identifier
-parseIdentifier = many1 $ anyChar >>= \c -> if isAlphaNum c then return c else noParser
-
-parseComment :: Parser (Maybe a)
-parseComment = char '#' >> (many $ anyCharBut '\n') >> parseEmpty
-
-parseEmpty :: Parser (Maybe a)
-parseEmpty = char '\n' >> return Nothing
-
-parseDeclaration :: Parser (Maybe Declaration)
-parseDeclaration = do
-    id <- parseIdentifier
-    many $ char ' '
-    char '='
-    many $ char ' '
-    value <- many1 $ anyCharBut '\n'
-    char '\n'
-    return $ Just (id, value)
 
 main :: IO ()
 main = do
